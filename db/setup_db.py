@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, Boolean, MetaData, UniqueConstraint, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 
-sql_engine = create_engine('sqlite:///my2.db')
+sql_engine = create_engine('sqlite:///mydb.db')
 Base = declarative_base()
 metadata = MetaData()
 
