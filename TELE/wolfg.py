@@ -80,7 +80,7 @@ def handle_command(message):
     dia.process_output()
 
     if 'game_short_name' in dia.OutMsg.tele_kwargs.keys():
-        ret = bot.send_game(**dia.OutMsg.tele_kwargs)
+        bot.send_game(**dia.OutMsg.tele_kwargs)
         dia.OutMsg = TextDeco(dia.OutMsg)
     elif 'photo' in dia.OutMsg.tele_kwargs.keys():
         bot.send_photo(**dia.OutMsg.tele_kwargs)
@@ -91,12 +91,10 @@ def handle_command(message):
     elif 'voice' in dia.OutMsg.tele_kwargs.keys():
         bot.send_voice(**dia.OutMsg.tele_kwargs)
         dia.OutMsg = VoiceDeco(dia.OutMsg)
-    elif 'data' in dia.OutMsg.tele_kwargs.keys()\
-            and dia.OutMsg.item == 'video':
+    elif 'data' in dia.OutMsg.tele_kwargs.keys() and dia.OutMsg.item == 'video':
         bot.send_video(**dia.OutMsg.tele_kwargs)
         dia.OutMsg = VideoDeco(dia.OutMsg)
-    elif 'data' in dia.OutMsg.tele_kwargs.keys() \
-            and dia.OutMsg.item == 'videonote':
+    elif 'data' in dia.OutMsg.tele_kwargs.keys() and dia.OutMsg.item == 'videonote':
         bot.send_video_note(**dia.OutMsg.tele_kwargs)
         dia.OutMsg = VideoNoteDeco(dia.OutMsg)
     elif dia.is_valid_kwargs():
@@ -148,24 +146,21 @@ def handle_command(message):
 def handle_query(callback_query):
     """Start game: Send game URL incl. parameters."""
     user_name = tele_get_user(callback_query)
-    user_id = str(callback_query.from_user.id)
 
     if callback_query.message is not None:
         msg_id = callback_query.message.message_id
         chat_id = str(callback_query.message.chat.id)
         args = 'msg_id=' + str(msg_id)
-        dia = TeleDialogue(chat_id, user_id, callback_query.message.text, user_name, callback_query.message.chat.type)
     elif callback_query.inline_message_id is not None:
         inline_msg_id = callback_query.inline_message_id
         chat_id = str(callback_query.from_user.id)
         args = 'inline_msg_id=' + str(inline_msg_id)
-        dia = TeleDialogue(chat_id, user_id, callback_query.game_short_name, user_name, 'inline')
-
+        
     args += '&chat_id=' + chat_id
     args += '&chat_instance=' + str(callback_query.chat_instance)
     args += '&user_name=' + user_name.replace(' ', '%20')
 
-    ret = bot.answer_callback_query(callback_query.id, url = game_server_ip + '/pong?' + args)
+    bot.answer_callback_query(callback_query.id, url = game_server_ip + '/pong?' + args)
 
 
 @bot.inline_handler(lambda query: args['game'])
@@ -178,7 +173,7 @@ def default_query(inline_query):
     try:
         inline_default_proc(bot, inline_query)
     except Exception as e:
-        print e
+        print(e)
 
 
 if __name__ == "__main__":

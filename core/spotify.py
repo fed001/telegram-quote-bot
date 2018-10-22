@@ -64,7 +64,7 @@ class Spotify(Platform):
             platform_url = 'https://open.spotify.com/user/' + sp_user_id + '/playlist/'
             complete_url = platform_url + playlist_id
             return complete_url
-        except HttpError, e:
+        except HttpError as e:
             print('An HTTP error %d occurred:\n%s' % (e.resp.status, e.content))
         except Exception as e:
             print(e)

@@ -65,7 +65,7 @@ class MyTele(telebot.TeleBot):
                     print(e)
             logger.debug("Jobs done.")
             game_users = query("""SELECT USER_NAME, CHAT_ID, SCORE, MSG_ID, INLINE_MSG_ID, CHAT_INSTANCE FROM GAMES
-                                WHERE TO_UPDATE = 'True' AND (MSG_ID NOT LIKE '' OR INLINE_MSG_ID NOT LIKE '');""")
+                                WHERE TO_UPDATE = 1 AND (MSG_ID NOT LIKE '' OR INLINE_MSG_ID NOT LIKE '');""")
             for gu in game_users:
                 user_id = query("""SELECT USER_ID FROM USERS WHERE USER_NAME LIKE ?""", (gu[0], ))
                 if len(user_id) > 0:
@@ -94,7 +94,7 @@ class MyTele(telebot.TeleBot):
                     logger.info("Telegram API exception!", exc_info = e)
                 if ret:
                     logger.info("Updated game score for {}.".format(gu[0]))
-                insert("""UPDATE GAMES SET TO_UPDATE = 'False' WHERE CHAT_INSTANCE LIKE ?""", (chat_instance, ))
+                insert("""UPDATE GAMES SET TO_UPDATE = 0 WHERE CHAT_INSTANCE LIKE ?""", (chat_instance, ))
 
             or_event.clear()
             try:

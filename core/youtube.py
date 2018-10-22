@@ -53,8 +53,8 @@ class YouTube(Platform):
                                                         channelId = yt_channel_id,
                                                         maxResults = 50,
                                                         pageToken = next_page_token)
-            except HttpError, e:
-                print 'An HTTP error %d occurred:\n%s' % (e.resp.status, e.content)
+            except HttpError as e:
+                print('An HTTP error {} occurred:\n{}'.format(e.resp.status, e.content))
                 print(e)
                 go_sleep(5)
 
@@ -99,7 +99,7 @@ class YouTube(Platform):
             platform_url = 'https://www.youtube.com/watch?v=' + video_id + '&list='
             complete_url = platform_url + playlist_id
             return complete_url
-        except HttpError, e:
+        except HttpError as e:
             print('An HTTP error %d occurred:\n%s' % (e.resp.status, e.content))
         except Exception as e:
             print(e)

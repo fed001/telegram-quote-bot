@@ -1,10 +1,6 @@
 #-*- coding: UTF-8 -*-
-import os
-import random
 import re
 import sqlite3
-
-import constants
 from core.constants import db_path
 
 
@@ -22,7 +18,7 @@ def clean_up_string(input_string):
         input_string = input_string.replace('"', '""')
         return my_strip(input_string)
     except Exception as exc:
-        print 'Exception occurred: ', str(exc)
+        print('Exception occurred: ', str(exc))
 
 
 def my_strip(input_string):

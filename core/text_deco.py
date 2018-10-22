@@ -18,11 +18,11 @@ class TextDeco(object):
             user_exists = sql_session.query(users).filter(
                 users.c.CHAT_ID == dia.chat_id)
             if not user_exists.first():
-                insert("""INSERT INTO USERS VALUES (?, ?, ?, '', 'False', ?)""",
+                insert("""INSERT INTO USERS VALUES (?, ?, ?, '', 0, ?)""",
                        (dia.chat_id, dia.bot_type, dia.user, dia.user_id))
             else:
                 insert("""UPDATE USERS SET USER_ID = ? WHERE CHAT_ID LIKE ?""", (dia.user_id, dia.chat_id))
-        is_awaiting_quote = query("""SELECT AWAITING_QUOTE FROM USERS WHERE AWAITING_QUOTE = 'True'
+        is_awaiting_quote = query("""SELECT AWAITING_QUOTE FROM USERS WHERE AWAITING_QUOTE = 1
                                      AND CHAT_ID LIKE ?;""", (dia.user_id,))
         in_msg_body_lower = ''
         in_msg_body_lower = dia.InMsg.in_msg_body.lower().replace('/', '')
@@ -31,7 +31,7 @@ class TextDeco(object):
             self.disable_web_page_preview = 'True'
             self.markup_type = 'text'
         elif in_msg_body_lower == 'addquote':
-            insert("""UPDATE USERS SET AWAITING_QUOTE = 'True' WHERE CHAT_ID LIKE ?;""", (dia.user_id,))
+            insert("""UPDATE USERS SET AWAITING_QUOTE = 1 WHERE CHAT_ID LIKE ?;""", (dia.user_id,))
         elif in_msg_body_lower == 'quote':
             self.markup_type = 'text'
         elif len(is_awaiting_quote) > 0 and dia.type == 'private':

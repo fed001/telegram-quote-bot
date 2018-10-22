@@ -1,9 +1,13 @@
 #-*- coding: UTF-8 -*-
 import os
+import sys
 from os.path import expanduser
 from sqlalchemy import create_engine, Table, MetaData
 from sqlalchemy.orm import create_session
-import ConfigParser
+if sys.version_info > (3,):  # python 3
+    import configparser as ConfigParser
+else:  # python 2
+    import ConfigParser
 
 
 home_path = expanduser("~")

@@ -5,7 +5,11 @@
 import os
 import random
 import re
-import urllib
+import sys
+if sys.version_info > (3,):  # python 3
+    from urllib.request import FancyURLopener
+else:  # python 2
+    from urllib import FancyURLopener
 from time import sleep
 import flask
 import spotipy
@@ -58,7 +62,7 @@ def yt_playlist_insert(video_id, client, playlist_id):
                                            onBehalfOfContentOwner = '')
         except Exception as e:
             print(e)
-        print answer
+        print(answer)
 
 
 def playlists_insert(client, properties, **kwargs):
@@ -192,7 +196,7 @@ def get_1st_yt_url(artist, track, yt_key):
             return ''
 
         return str_video_link
-    except HttpError, e:
+    except HttpError as e:
         print('An HTTP error %d occurred:\n%s' % (e.resp.status, e.content))
 
 
@@ -265,5 +269,5 @@ user_agent_win_chrome = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; it; rv:1.8.1.1
 user_agent_linux_chrome = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36'
 
 
-class MyOpener(urllib.FancyURLopener):
+class MyOpener(FancyURLopener):
     version = user_agent_win_chrome

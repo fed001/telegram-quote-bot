@@ -38,8 +38,16 @@ class Dialogue(object):
     def get_rdm_quote(self):
         try:
             quote_rows = self.perform_quote_select()
-            raw_quote = quote_rows[0]
-            author = quote_rows[1]
+            if quote_rows is not None:
+                raw_quote = quote_rows[0]
+                author = quote_rows[1]
+                type = quote_rows[2]
+                file_id = quote_rows[3]
+            else:
+                raw_quote = "No quote found"
+                author = "system"
+                type = 'text'
+                file_id = None
             if author is not None:
                 author = author.title()
             if raw_quote is not None:
@@ -47,15 +55,14 @@ class Dialogue(object):
                     formatted_quote = raw_quote[0].title() + raw_quote[1:] + '.'
                 else:
                     formatted_quote = raw_quote[0].title() + raw_quote[1:]
-            type = quote_rows[2]
-            file_id = quote_rows[3]
+
             self.OutMsg.file_id = file_id
             time.sleep(0.1)
             self.OutMsg.item = type
             if type == 'text':
                 self.format_quote(author, formatted_quote)
         except Exception as e:
-            print e
+            print(e)
 
     def format_quote(self, author, quote):
         pass
@@ -113,7 +120,7 @@ Author1 - Text
 Author2 - Another Text
                 """
             self.OutMsg.markup_type = 'text'
-            insert("""UPDATE USERS SET AWAITING_QUOTE = 'True' WHERE CHAT_ID LIKE ?;""", (self.user_id,))
+            insert("""UPDATE USERS SET AWAITING_QUOTE = 1 WHERE CHAT_ID LIKE ?;""", (self.user_id,))
         elif in_msg_body_lower == 'quote':
             cleanup = 'True'
             self.send_typing_status()
@@ -142,7 +149,7 @@ Author2 - Another Text
                     interval = 'daily'
                     self.OutMsg.answer = "Adding user {} to Subscribers...".format(self.user)
                     insert("""INSERT OR IGNORE INTO JOBS VALUES (?, ?, ?, ?, ?, ?, ?, NULL, '09:00:00')""",
-                           (self.user_id, self.bot_type, self.user, 'quote', 'true', repeat, interval))
+                           (self.user_id, self.bot_type, self.user, 'quote', 1, repeat, interval))
                 else:
                     self.OutMsg.answer = "Open a private Chat with me and subscribe there.".format(self.user)
         elif is_awaiting_quote.first() is not None and (self.OutMsg.answer is None or self.OutMsg.answer == '') \
@@ -156,7 +163,7 @@ Author2 - Another Text
         self.OutMsg.prepare_kwargs()
 
     def stop_awaiting_quote(self):
-        insert("""UPDATE USERS SET AWAITING_QUOTE = 'False' WHERE CHAT_ID LIKE ?""", (self.user_id,))
+        insert("""UPDATE USERS SET AWAITING_QUOTE = 0 WHERE CHAT_ID LIKE ?""", (self.user_id,))
 
     def handle_jobs(self):
         jobs = query("""SELECT *, ROWID, TO_SEND_AT_TIME AS C

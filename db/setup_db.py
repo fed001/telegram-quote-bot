@@ -11,7 +11,7 @@ class Users(Base):
     CHAT_ID = Column(String(250), primary_key = True)
     BOT_TYPE = Column(String(250), nullable = False)
     USER_NAME = Column(String(250), nullable = False)
-    COMMENT = Column(String(250), nullable = False)
+    COMMENT = Column(String(250), nullable = True)
     AWAITING_QUOTE = Column(Boolean, nullable = False)
     USER_ID = Column(String(250), nullable = False)
     __table_args__ = (UniqueConstraint('CHAT_ID', 'BOT_TYPE', 'USER_NAME', 'USER_ID', name = '_unique_users'),)
