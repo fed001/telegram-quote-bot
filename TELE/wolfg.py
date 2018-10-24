@@ -119,15 +119,9 @@ def handle_command(message):
 
 @bot.message_handler(content_types = ['location'])
 def handle_command(message):
-    """
-    Send a rdm tennis class location from the db.
-    """
     dia = TeleDialogue(message.chat.id, message.from_user.id, message.text, message.chat.first_name + message.chat.last_name, message.chat.type)
-    bot.send_chat_action(dia.chat_id, 'typing')
     dia.InMsg = LocationDeco(dia.InMsg)
     dia.InMsg.print_in_msg(dia)
-    send_rdm_location(bot, dia.chat_id)
-    dia.stop_awaiting_quote()
 
 
 @bot.message_handler(content_types = ['sticker'])
