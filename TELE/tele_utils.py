@@ -32,19 +32,6 @@ def send_sticker(bot, chat_id, file_id):
     bot.send_sticker(chat_id, file_id)
 
 
-def send_rdm_location(bot, chat_id):
-    bot.send_chat_action(chat_id, 'typing')
-    time.sleep(0.1)
-    rdm_location = query("""SELECT LONGITUDE, LATITUDE, TITLE, ADDRESS
-                        FROM LOCATION ORDER BY RANDOM() LIMIT 1""")
-    bot.send_venue(chat_id,
-                   latitude  = rdm_location[0][3],
-                   longitude = rdm_location[0][2],
-                   title     = rdm_location[0][1],
-                   address   = rdm_location[0][0])
-    time.sleep(0.1)
-
-
 def tele_get_user(message):
     sleep(0.1)
     has_first_name = message.from_user.first_name is not None

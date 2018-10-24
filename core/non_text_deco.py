@@ -20,7 +20,7 @@ class NonTextDeco(object):
             else:
                 insert("""UPDATE USERS SET USER_ID = ? WHERE CHAT_ID LIKE ?""", (self.user_id, self.chat_id))
         is_awaiting_quote = sql_session.query(users.c.AWAITING_QUOTE).filter(
-            and_(or_(users.c.AWAITING_QUOTE is True, users.c.AWAITING_QUOTE == 'True'),
+            and_(or_(users.c.AWAITING_QUOTE == 1, users.c.AWAITING_QUOTE == 'True'),
                  users.c.CHAT_ID == self.user_id)).first()
         in_msg_body_lower = ''
 

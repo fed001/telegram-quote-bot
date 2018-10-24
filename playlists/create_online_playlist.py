@@ -207,7 +207,7 @@ if __name__ == '__main__':
         sp_client = spotipy.Spotify(auth = token)
         sp = Spotify(sp_client)
     else:
-        print "Can't get token for", sp_username
+        print("Can't get token for", sp_username)
 
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '0'
     app.run('localhost', 8090, debug = True)

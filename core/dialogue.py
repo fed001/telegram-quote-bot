@@ -2,7 +2,9 @@
 import re
 import time
 from sqlalchemy import *
-from core.constants import help_text, sql_session, users
+from core.constants import help_text, sql_session, users, jobs, abort_text, quote_invalid_text, quote_not_found_text,\
+    quote_success_text, not_subscribed_text, removing_subscription_text, already_subscribed_text, \
+    adding_subscription_text, subscription_not_private_text, quote_not_private_text
 from core.dbQuery import query, insert
 from core.youtube import YouTube
 from core.spotify import Spotify
@@ -27,10 +29,11 @@ class Dialogue(object):
     def send_typing_status(self):
         pass
 
-    def is_user_in_db(self, in_table):
-        row_exists = query("""SELECT EXISTS(SELECT 1 FROM {} WHERE CHAT_ID LIKE ?
-                              AND BOT_TYPE LIKE ?);""".format(in_table), (self.user_id, self.bot_type))
-        if row_exists[0][0]:
+    def is_user_in_jobs(self):
+        row_exists = sql_session.query(jobs).filter(
+            and_(jobs.c.CHAT_ID == self.user_id, jobs.c.BOT_TYPE == self.bot_type))
+
+        if row_exists.first():
             return True
         else:
             return False
@@ -44,7 +47,7 @@ class Dialogue(object):
                 type = quote_rows[2]
                 file_id = quote_rows[3]
             else:
-                raw_quote = "No quote found"
+                raw_quote = quote_not_found_text
                 author = "system"
                 type = 'text'
                 file_id = None
@@ -71,11 +74,11 @@ class Dialogue(object):
         if i == 0:
             if in_msg_body_lower == 'abort':
                 self.stop_awaiting_quote()
-                self.OutMsg.answer = """Operation aborted."""
+                self.OutMsg.answer = abort_text
             else:
-                self.OutMsg.answer = """Error! Invalid Format or duplicate? Try again or /abort"""
+                self.OutMsg.answer = quote_invalid_text
         else:
-            self.OutMsg.answer = """Success! {} Quote(s) inserted in Database. Send me more Quotes anytime or /abort to stop adding Quotes.""".format(i)
+            self.OutMsg.answer = quote_success_text.format(i)
         self.OutMsg.markup_type = 'text'
 
     def perform_quote_select(self):
@@ -130,32 +133,32 @@ Author2 - Another Text
             cleanup = 'True'
             self.send_typing_status()
             self.OutMsg.markup_type = 'text'
-            if self.is_user_in_db('JOBS'):
-                self.OutMsg.answer = "Removing user {} from Subscribers...".format(self.user)
+            if self.is_user_in_jobs():
+                self.OutMsg.answer = removing_subscription_text.format(self.user)
                 insert("""DELETE FROM JOBS WHERE BOT_TYPE LIKE ? AND CHAT_ID LIKE ?""",
                        (self.bot_type, self.user_id))
             else:
-                self.OutMsg.answer = "User {} not subscribed.".format(self.user)
+                self.OutMsg.answer = not_subscribed_text.format(self.user)
         elif in_msg_body_lower == 'subscribe':
             cleanup = 'True'
             self.send_typing_status()
             self.OutMsg.markup_type = 'text'
-            is_user_in_subscribers = self.is_user_in_db('JOBS')
+            is_user_in_subscribers = self.is_user_in_jobs()
             if is_user_in_subscribers:
-                self.OutMsg.answer = "User {} already subscribed.".format(self.user)
+                self.OutMsg.answer = already_subscribed_text.format(self.user)
             elif not is_user_in_subscribers:
                 if self.type == 'private':
                     repeat = 'true'
                     interval = 'daily'
-                    self.OutMsg.answer = "Adding user {} to Subscribers...".format(self.user)
+                    self.OutMsg.answer = adding_subscription_text.format(self.user)
                     insert("""INSERT OR IGNORE INTO JOBS VALUES (?, ?, ?, ?, ?, ?, ?, NULL, '09:00:00')""",
                            (self.user_id, self.bot_type, self.user, 'quote', 1, repeat, interval))
                 else:
-                    self.OutMsg.answer = "Open a private Chat with me and subscribe there.".format(self.user)
+                    self.OutMsg.answer = subscription_not_private_text.format(self.user)
         elif is_awaiting_quote.first() is not None and (self.OutMsg.answer is None or self.OutMsg.answer == '') \
             and self.type != 'private':
             self.send_typing_status()
-            self.OutMsg.answer = "Open a private Chat with me and add your Quote(s) there.".format(self.user)
+            self.OutMsg.answer = quote_not_private_text.format(self.user)
 
         if cleanup == 'True':
             self.stop_awaiting_quote()

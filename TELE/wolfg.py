@@ -21,7 +21,7 @@ from TELE.tele_dialogue import TeleDialogue
 from TELE.inline import inline_default_proc
 logger = telebot.logger
 telebot.logger.setLevel(logging.INFO)  # Outputs INFO/DEBUG messages to console.
-from TELE.tele_utils import send_rdm_location, send_sticker, tele_get_user
+from TELE.tele_utils import send_sticker, tele_get_user
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser(description='WOLFG Telegram Chatbot')

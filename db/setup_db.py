@@ -39,11 +39,11 @@ class Playlist(Base):
 class Quote(Base):
     __tablename__ = 'QUOTE'
     AUTHOR = Column(String(250))
-    QUOTE = Column(String(250), primary_key = True, nullable = True)
+    QUOTE = Column(String(250), primary_key = True, nullable = True, unique = True)
     TIME_ADDED = Column(String(250))
     ADDED_BY = Column(String(250))
     TYPE = Column(String(250))
-    FILE_ID = Column(String(250), primary_key = True, nullable = True)
+    FILE_ID = Column(String(250), primary_key = True, nullable = True, unique = True)
 
 
 class Jobs(Base):
