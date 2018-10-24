@@ -13,7 +13,7 @@ Run without Spotify:
 
 Run with Spotify:
 1. export WOLFG_TELE_TOKEN=<TELEGRAM_BOT_TOKEN>
-2. export SPOTIPY_REDIRECT_URI=<SPOTIFY_CALLBACK_ADDRESS>
 2. export SPOTIPY_CLIENT_SECRET==<SPOTIFY_SECRET>
-2. export SPOTIPY_CLIENT_ID=<SPOTIFY_ID>
-2. python -m TELE.wolfg --spotify
+3. export SPOTIPY_CLIENT_ID=<SPOTIFY_ID>
+4. in section spotify of wolfg.cfg, replace user_id
+5. python -m TELE.wolfg --spotify
