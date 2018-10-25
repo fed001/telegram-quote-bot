@@ -1,6 +1,6 @@
 from time import sleep
 
-from TELE.tele_deco import TeleDeco
+from tele.tele_deco import TeleDeco
 from core.constants import sql_session, quote
 from core.dialogue import Dialogue
 from core.deco import Deco
@@ -35,7 +35,7 @@ class TeleDialogue(Dialogue):
         :return:
         """
         sleep(0.1)
-        from TELE.wolfg import bot
+        from tele.wolfg import bot
         import telebot
         try:
             bot.send_chat_action(self.chat_id, action)

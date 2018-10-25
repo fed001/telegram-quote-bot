@@ -16,12 +16,12 @@ if __package__ is None:
 else:
     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
-from TELE.my_tele import MyTele
-from TELE.tele_dialogue import TeleDialogue
-from TELE.inline import inline_default_proc
+from tele.my_tele import MyTele
+from tele.tele_dialogue import TeleDialogue
+from tele.inline import inline_default_proc
 logger = telebot.logger
 telebot.logger.setLevel(logging.INFO)  # Outputs INFO/DEBUG messages to console.
-from TELE.tele_utils import send_sticker, tele_get_user
+from tele.tele_utils import send_sticker, tele_get_user
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser(description='WOLFG Telegram Chatbot')

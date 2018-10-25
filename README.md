@@ -9,4 +9,4 @@ Installation:
 
 Usage:
 1. export WOLFG_TELE_TOKEN=<TELEGRAM_BOT_TOKEN>
-2. python -m TELE.wolfg
+2. python -m tele.wolfg

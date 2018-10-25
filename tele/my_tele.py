@@ -3,14 +3,14 @@ import requests
 import telebot
 from telebot import util, apihelper
 from core.dbQuery import insert, query
-from TELE.tele_dialogue import TeleDialogue
+from tele.tele_dialogue import TeleDialogue
 from core.non_text_deco import VideoDeco, AudioDeco, PhotoDeco, VoiceDeco
 from core.text_deco import TextDeco
 
 
 class MyTele(telebot.TeleBot):
     def _TeleBot__threaded_polling(self, none_stop = False, interval = 0, timeout = 3):
-        from TELE.wolfg import logger, bot
+        from tele.wolfg import logger, bot
         logger.info('Started polling.')
         self._TeleBot__stop_polling.clear()
         error_interval = .25
