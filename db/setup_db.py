@@ -17,25 +17,6 @@ class Users(Base):
     __table_args__ = (UniqueConstraint('CHAT_ID', 'BOT_TYPE', 'USER_NAME', 'USER_ID', name = '_unique_users'),)
 
 
-class Music(Base):
-    __tablename__ = 'MUSIC'
-    ARTIST = Column(String(250), primary_key = True)
-    TRACK = Column(String(250))
-    DATE = Column(String(250))
-    TIME = Column(String(250))
-    DJ = Column(String(250))
-    __table_args__ = (UniqueConstraint('ARTIST', 'TRACK', 'DATE', 'TIME', 'DJ', name = '_unique_music'),)
-
-
-class Playlist(Base):
-    __tablename__ = 'PLAYLIST'
-    KEY = Column(String(250), primary_key = True)
-    PL_TITLE = Column(String(250))
-    PL_DESCRIPTION = Column(String(250))
-    ARTIST = Column(String(250))
-    TRACK = Column(String(250))
-
-
 class Quote(Base):
     __tablename__ = 'QUOTE'
     AUTHOR = Column(String(250))
@@ -73,15 +54,6 @@ class Games(Base):
     TO_UPDATE = Column(Boolean)
     __table_args__ = (UniqueConstraint('CHAT_ID', 'BOT_TYPE', 'USER_NAME', 'GAME', 'MSG_ID', 'INLINE_MSG_ID',
                                        'CHAT_INSTANCE', name = '_unique_games'),)
-
-
-class Location(Base):
-    __tablename__ = 'LOCATION'
-    LATITUDE = Column(String(250), primary_key = True)
-    LONGITUDE = Column(String(250), primary_key = True)
-    TITLE = Column(String(250), primary_key = True)
-    ADDRESS = Column(String(250), primary_key = True)
-    __table_args__ = (UniqueConstraint('LATITUDE', 'LONGITUDE', 'TITLE', 'ADDRESS', name = '_unique_locations'),)
 
 
 class Cache(Base):

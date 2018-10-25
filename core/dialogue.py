@@ -6,8 +6,6 @@ from core.constants import help_text, sql_session, users, jobs, abort_text, quot
     quote_success_text, not_subscribed_text, removing_subscription_text, already_subscribed_text, \
     adding_subscription_text, subscription_not_private_text, quote_not_private_text
 from core.dbQuery import query, insert
-from core.youtube import YouTube
-from core.spotify import Spotify
 
 
 class Dialogue(object):
@@ -18,12 +16,8 @@ class Dialogue(object):
         self.job_dial = []
         self.msg = None
         if args is not None:
-            self.spotify_flag = args['spotify']
-            self.youtube_flag = args['youtube']
             self.game_flag = args['game']
         else:
-            self.spotify_flag = False
-            self.youtube_flag = False
             self.game_flag = False
 
     def send_typing_status(self):
@@ -104,17 +98,6 @@ class Dialogue(object):
         elif in_msg_body_lower == 'pong'and self.game_flag:
             cleanup = 'True'
             self.OutMsg.markup_type = 'game'
-        elif in_msg_body_lower in ['spotify', 'youtube']:
-            cleanup = 'True'
-            self.OutMsg.markup_type = 'link'
-            if in_msg_body_lower == 'youtube' and self.youtube_flag:
-                api = YouTube()
-            elif in_msg_body_lower == 'spotify' and self.spotify_flag:
-                api = Spotify()
-            else:
-                return
-            self.send_typing_status()
-            self.OutMsg.my_url = api.get_rdm_playlist()
         elif in_msg_body_lower == 'addquote':
             self.send_typing_status()
             self.OutMsg.answer = """OK, you can either send me an Audio File, Video File, Voice Note, Picture or type a list of Text Quotes in the following format:

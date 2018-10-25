@@ -25,12 +25,6 @@ from TELE.tele_utils import send_sticker, tele_get_user
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser(description='WOLFG Telegram Chatbot')
-ap.add_argument('--spotify', dest='spotify', action='store_const',
-                     const=True, default=False,
-                     help='enable Spotify Support (default: disabled)')
-ap.add_argument('--youtube', dest='youtube', action='store_const',
-                     const=True, default=False,
-                     help='enable YouTube Support (default: disabled)')
 ap.add_argument('--game', dest='game', action='store_const',
                      const=True, default=False,
                      help='enable Game Support (default: disabled)')

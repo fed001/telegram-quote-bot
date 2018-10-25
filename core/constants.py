@@ -19,9 +19,7 @@ configParser.read(configFilePath)
 db_path = os.path.join(app_path, 'db/mydb.db')
 log_path = os.path.join(app_path, 'log')
 game_path = os.path.join(app_path, 'games')
-html_path = os.path.join(app_path, 'playlists/create_online_playlist.html')
 pong_html_path = os.path.join(app_path, 'games/pong/index.html')
-yt_channel_id = configParser.get('youtube', 'channel_id')
 help_text = configParser.get('general', 'help_text')
 abort_text = configParser.get('general', 'abort_text')
 quote_invalid_text = configParser.get('general', 'quote_invalid_text')
@@ -33,13 +31,7 @@ already_subscribed_text = configParser.get('general', 'already_subscribed_text')
 adding_subscription_text = configParser.get('general', 'adding_subscription_text')
 subscription_not_private_text = configParser.get('general', 'subscription_not_private_text')
 quote_not_private_text = configParser.get('general', 'quote_not_private_text')
-sp_user_id = configParser.get('spotify', 'user_id')
 exclamation_mark_pic_url = configParser.get('general', 'exclamation_mark_pic_url')
-sp_username = configParser.get('spotify', 'username')
-
-apis = []
-apis.append('spotify')
-apis.append('youtube')
 
 sql_engine = create_engine('sqlite:///' + db_path)
 sql_engine.echo = False
