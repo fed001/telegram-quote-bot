@@ -95,6 +95,7 @@ class Dialogue(object):
             self.OutMsg.markup_type = 'game'
         elif in_msg_body_lower == 'addquote':
             skip_cleanup = True
+            insert("""UPDATE USERS SET AWAITING_QUOTE = 1 WHERE CHAT_ID LIKE ?;""", (self.user_id,))
             self.send_typing_status()
             self.OutMsg.answer = """OK, you can either send me an Audio File, Video File, Voice Note, Picture or type a list of Text Quotes in the following format:
 

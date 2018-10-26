@@ -27,11 +27,8 @@ class TextDeco(object):
         in_msg_body_lower = ''
         in_msg_body_lower = dia.InMsg.in_msg_body.lower().replace('/', '')
         in_msg_body_lower = re.sub(r"@.+", "", in_msg_body_lower)
-        if any(cmd == in_msg_body_lower for cmd in ['help', 'start']):
-            self.disable_web_page_preview = 'True'
-        elif in_msg_body_lower == 'addquote':
-            insert("""UPDATE USERS SET AWAITING_QUOTE = 1 WHERE CHAT_ID LIKE ?;""", (dia.user_id,))
-        elif len(is_awaiting_quote) > 0 and dia.type == 'private':
+
+        if len(is_awaiting_quote) > 0 and dia.type == 'private':
             i = 0
             data = in_msg_body_lower.split('\n')
             for item in data:

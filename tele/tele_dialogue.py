@@ -50,7 +50,8 @@ class TeleDialogue(Dialogue):
     def create_dlg(chat_id, user):
         return TeleDialogue(chat_id, chat_id, '', user, 'private')
 
-    def perform_quote_select(self):
+    @staticmethod
+    def perform_quote_select():
         this = sql_session.query(
                                 quote.c.QUOTE,
                                 quote.c.AUTHOR,
