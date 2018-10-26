@@ -1,12 +1,38 @@
-WOLFG
-Telegram Bot
+# Wolfg
 
-Installation:
-1. Clone repository
-2. Create virtualenv and activate
-3. pip install -r requirements.txt
-4. cd db && python setup_db.py
+Wolfg is a Telegram Chatbot that is sending daily quotes to subscribers and lets you add your own quotes to its SQLite database. Quotes may be in any format, for example
+- Text
+- Pictures
+- Voice / Video Notes
 
-Usage:
-1. export WOLFG_TELE_TOKEN=<TELEGRAM_BOT_TOKEN>
-2. python -m tele.wolfg
+
+### Tech
+
+Wolfg uses a number of open source Python libraries to work properly:
+
+* [pyTelegramBotAPI] - Implementation for the Telegram Bot API
+* [sqlalchemy] - SQL toolkit
+
+### Installation
+
+Wolfg requires [Python](https://www.python.org/) v2.7+ to run.
+
+Install the dependencies, setup the database and start the chatbot.
+
+```sh
+$ cd wolfg
+$ pip install -r requirements.txt
+$ cd db
+$ python setup_db.py
+```
+
+### Usage
+
+```sh
+$ export WOLFG_TELE_TOKEN=<TELEGRAM_BOT_TOKEN>
+$ python -m tele.wolfg
+```
+
+   [pyTelegramBotAPI]: <https://github.com/eternnoir/pyTelegramBotAPI>
+   [sqlalchemy]: <https://www.sqlalchemy.org>
+   
