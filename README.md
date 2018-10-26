@@ -29,6 +29,7 @@ $ python setup_db.py
 ### Usage
 
 ```sh
+$ cd wolfg
 $ export WOLFG_TELE_TOKEN=<TELEGRAM_BOT_TOKEN>
 $ python -m tele.wolfg
 ```
