@@ -15,7 +15,7 @@ class NonTextDeco(object):
         if self.user is not '':
             user_exists = sql_session.query(users.c.USER_NAME).filter(users.c.CHAT_ID == self.chat_id)
             if not user_exists.first():  # need this in Stickers & Locations also
-                res = sql_session.execute(users.insert(
+                sql_session.execute(users.insert(
                     [self.chat_id, self.bot_type, self.user, '', False, self.user_id]))
             else:
                 insert("""UPDATE USERS SET USER_ID = ? WHERE CHAT_ID LIKE ?""", (self.user_id, self.chat_id))

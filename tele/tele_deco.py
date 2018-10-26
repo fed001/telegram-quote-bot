@@ -3,21 +3,11 @@ from core.deco import Deco
 
 class TeleDeco(Deco):
     def __init__(self, dia):
+        super(TeleDeco, self).__init__(dia, '')
         self.tele_kwargs = {}
-        self.bot_type = 'telegram'
-        self.markup = None
         self.disable_web_page_preview = 'False'
-        self.my_url = ""
-        self.markup_type = None
-        self.parse_type = ''
         self.answer = ""
-        self.job_dial = []
-        self.msg = None
-        self.file_id = None
         self.item = None
-        self.chat_id = dia.chat_id
-        self.user_id = dia.user_id
-        self.user = dia.user
 
     def prepare_kwargs(self):
         self.tele_kwargs['chat_id'] = self.chat_id

@@ -73,49 +73,40 @@ class Dialogue(object):
                 self.OutMsg.answer = quote_invalid_text
         else:
             self.OutMsg.answer = quote_success_text.format(i)
-        self.OutMsg.markup_type = 'text'
 
     def perform_quote_select(self):
         pass
 
     def process_output(self):
-        cleanup = 'False'
+        skip_cleanup = False
         is_awaiting_quote = sql_session.query(users).filter(
-            and_(users.c.AWAITING_QUOTE is True, users.c.CHAT_ID == self.user_id))
+            and_(or_(users.c.AWAITING_QUOTE is True, users.c.AWAITING_QUOTE == 1), users.c.CHAT_ID == self.user_id)).first()
         in_msg_body_lower = ''
         if hasattr(self.InMsg, 'in_msg_body') and self.InMsg.in_msg_body is not None:
             in_msg_body_lower = self.InMsg.in_msg_body.lower().replace('/', '')
         in_msg_body_lower = re.sub(r"@.+", "", in_msg_body_lower)
         if any(ext == in_msg_body_lower for ext in ['help', 'start']):
-            cleanup = 'True'
             self.OutMsg.disable_web_page_preview = 'True'
             self.OutMsg.answer = help_text
-            self.OutMsg.markup_type = 'text'
         elif in_msg_body_lower == 'update':
             self.handle_jobs()
-            self.OutMsg.markup_type = 'text'
             return
         elif in_msg_body_lower == 'pong'and self.game_flag:
-            cleanup = 'True'
             self.OutMsg.markup_type = 'game'
         elif in_msg_body_lower == 'addquote':
+            skip_cleanup = True
             self.send_typing_status()
             self.OutMsg.answer = """OK, you can either send me an Audio File, Video File, Voice Note, Picture or type a list of Text Quotes in the following format:
 
 Author1 - Text
 Author2 - Another Text
                 """
-            self.OutMsg.markup_type = 'text'
             insert("""UPDATE USERS SET AWAITING_QUOTE = 1 WHERE CHAT_ID LIKE ?;""", (self.user_id,))
         elif in_msg_body_lower == 'quote':
-            cleanup = 'True'
             self.send_typing_status()
             self.get_rdm_quote()
-            self.OutMsg.markup_type = 'text'
         elif in_msg_body_lower == 'unsubscribe':
-            cleanup = 'True'
             self.send_typing_status()
-            self.OutMsg.markup_type = 'text'
             if self.is_user_in_jobs():
                 self.OutMsg.answer = removing_subscription_text.format(self.user)
                 insert("""DELETE FROM JOBS WHERE BOT_TYPE LIKE ? AND CHAT_ID LIKE ?""",
@@ -123,9 +114,7 @@ Author2 - Another Text
             else:
                 self.OutMsg.answer = not_subscribed_text.format(self.user)
         elif in_msg_body_lower == 'subscribe':
-            cleanup = 'True'
             self.send_typing_status()
-            self.OutMsg.markup_type = 'text'
             is_user_in_subscribers = self.is_user_in_jobs()
             if is_user_in_subscribers:
                 self.OutMsg.answer = already_subscribed_text.format(self.user)
@@ -138,12 +127,15 @@ Author2 - Another Text
                            (self.user_id, self.bot_type, self.user, 'quote', 1, repeat, interval))
                 else:
                     self.OutMsg.answer = subscription_not_private_text.format(self.user)
-        elif is_awaiting_quote.first() is not None and (self.OutMsg.answer is None or self.OutMsg.answer == '') \
+        elif is_awaiting_quote is not None and (self.OutMsg.answer is None or self.OutMsg.answer == '') \
             and self.type != 'private':
+            skip_cleanup = True
             self.send_typing_status()
             self.OutMsg.answer = quote_not_private_text.format(self.user)
+        else:
+            skip_cleanup = True
 
-        if cleanup == 'True':
+        if skip_cleanup is False:
             self.stop_awaiting_quote()
 
         self.OutMsg.prepare_kwargs()
