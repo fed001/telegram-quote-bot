@@ -56,15 +56,4 @@ class Games(Base):
                                        'CHAT_INSTANCE', name = '_unique_games'),)
 
 
-class Cache(Base):
-    __tablename__ = 'CACHE'
-    PLATFORM = Column(String(250), primary_key = True)
-    PLAYLIST_TITLE = Column(String(250), primary_key = True)
-    PLAYLIST_ID = Column(String(250), primary_key = True)
-    VIDEO_ID = Column(String(250), primary_key = True, nullable = True)
-    DATE = Column(String(250), primary_key = True)
-    __table_args__ = (UniqueConstraint('PLATFORM', 'PLAYLIST_TITLE', 'PLAYLIST_ID', 'VIDEO_ID', 'DATE',
-                                       name = '_unique_cache'),)
-
-
 Base.metadata.create_all(bind = sql_engine)

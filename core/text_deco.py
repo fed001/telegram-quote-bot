@@ -3,6 +3,8 @@ import re
 from core.constants import sql_session, users
 from core.dbQuery import query, insert
 from core.tools import is_not_empty
+from sqlalchemy import func
+from core.constants import quote
 
 
 class TextDeco(object):
@@ -18,8 +20,8 @@ class TextDeco(object):
             user_exists = sql_session.query(users).filter(
                 users.c.CHAT_ID == dia.chat_id)
             if not user_exists.first():
-                insert("""INSERT INTO USERS VALUES (?, ?, ?, '', 0, ?)""",
-                       (dia.chat_id, dia.bot_type, dia.user, dia.user_id))
+                sql_session.execute(users.insert(
+                    [dia.chat_id, dia.bot_type, dia.user, '', 0, dia.user_id]))
             else:
                 insert("""UPDATE USERS SET USER_ID = ? WHERE CHAT_ID LIKE ?""", (dia.user_id, dia.chat_id))
         is_awaiting_quote = query("""SELECT AWAITING_QUOTE FROM USERS WHERE AWAITING_QUOTE = 1
@@ -35,11 +37,11 @@ class TextDeco(object):
                 data_piece = item.split(' - ')
                 if len(data_piece) == 2:
                     author = data_piece[0]
-                    quote = data_piece[1]
-                    if is_not_empty(author) and is_not_empty(quote):
-                        rowcount = insert(
-                            """INSERT OR IGNORE INTO QUOTE VALUES (?, ?, DATE('NOW'), ?, 'text', NULL)""",
-                            (author, quote, dia.user_id))
+                    quote_text = data_piece[1]
+                    if is_not_empty(author) and is_not_empty(quote_text):
+                        rowcount = sql_session.execute(quote.insert(
+                            [author, quote_text, func.now(), dia.user_id, 'text', None]).prefix_with(
+                                                                                        "OR IGNORE")).rowcount
                         i += rowcount
                 else:
                     break

@@ -2,10 +2,10 @@
 import re
 import time
 from sqlalchemy import *
-from core.constants import help_text, sql_session, users, jobs, abort_text, quote_invalid_text, quote_not_found_text,\
+from core.constants import help_text, sql_engine, sql_session, users, jobs, abort_text, quote_invalid_text, quote_not_found_text,\
     quote_success_text, not_subscribed_text, removing_subscription_text, already_subscribed_text, \
     adding_subscription_text, subscription_not_private_text, quote_not_private_text
-from core.dbQuery import query, insert
+from core.dbQuery import insert
 
 
 class Dialogue(object):
@@ -124,8 +124,9 @@ Author2 - Another Text
                     repeat = 'true'
                     interval = 'daily'
                     self.OutMsg.answer = adding_subscription_text.format(self.user)
-                    insert("""INSERT OR IGNORE INTO JOBS VALUES (?, ?, ?, ?, ?, ?, ?, NULL, '09:00:00')""",
-                           (self.user_id, self.bot_type, self.user, 'quote', 1, repeat, interval))
+                    sql_session.execute(jobs.insert(
+                        [self.user_id, self.bot_type, self.user, 'quote', 1, repeat, interval, None,
+                         '09:00:00']).prefix_with("OR IGNORE"))
                 else:
                     self.OutMsg.answer = subscription_not_private_text.format(self.user)
         elif is_awaiting_quote is not None and (self.OutMsg.answer is None or self.OutMsg.answer == '') \
@@ -145,12 +146,10 @@ Author2 - Another Text
         insert("""UPDATE USERS SET AWAITING_QUOTE = 0 WHERE CHAT_ID LIKE ?""", (self.user_id,))
 
     def handle_jobs(self):
-        jobs = query("""SELECT *, ROWID, TO_SEND_AT_TIME AS C
-                        FROM JOBS WHERE BOT_TYPE LIKE ?
-                        AND (LAST_SENT_ON_DATE IS NULL OR LAST_SENT_ON_DATE < DATE('NOW'))
-                        AND TIME('NOW', 'LOCALTIME') > C""", (self.bot_type, ))
+        sql = "SELECT *, ROWID, TO_SEND_AT_TIME AS C FROM JOBS WHERE BOT_TYPE LIKE '{}' AND (LAST_SENT_ON_DATE IS NULL OR LAST_SENT_ON_DATE < DATE('NOW')) AND TIME('NOW', 'LOCALTIME') > C".format(self.bot_type)
+        jobs_query = sql_engine.execute(sql)
         i = 0
-        for job in jobs:
+        for job in jobs_query:
             chat_id = job[0]
             user = job[2]
             self.job_dial.append(self.create_dlg(chat_id, user))
@@ -168,4 +167,3 @@ Author2 - Another Text
             self.job_dial[i].OutMsg.prepare_kwargs()
             self.job_dial[i].stop_awaiting_quote()
             i += 1
-

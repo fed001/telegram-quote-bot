@@ -1,11 +1,13 @@
 import time
 import requests
 import telebot
+from sqlalchemy import and_, or_
 from telebot import util, apihelper
-from core.dbQuery import insert, query
+from core.dbQuery import insert
 from tele.tele_dialogue import TeleDialogue
 from core.non_text_deco import VideoDeco, AudioDeco, PhotoDeco, VoiceDeco
 from core.text_deco import TextDeco
+from core.constants import sql_session, games, users
 
 
 class MyTele(telebot.TeleBot):
@@ -64,10 +66,19 @@ class MyTele(telebot.TeleBot):
                 except telebot.apihelper.ApiException as e:
                     print(e)
             logger.debug("Jobs done.")
-            game_users = query("""SELECT USER_NAME, CHAT_ID, SCORE, MSG_ID, INLINE_MSG_ID, CHAT_INSTANCE FROM GAMES
-                                WHERE TO_UPDATE = 1 AND (MSG_ID NOT LIKE '' OR INLINE_MSG_ID NOT LIKE '');""")
+            game_users = sql_session.query(games.c.USER_NAME, games.c.CHAT_ID, games.c.SCORE,
+                                           games.c.MSG_ID, games.c.INLINE_MSG_ID,
+                                           games.c.CHAT_INSTANCE).filter(
+                and_(
+                    games.c.TO_UPDATE == 1,
+                    or_(
+                        games.c.MSG_ID != '',
+                        games.c.INLINE_MSG_ID != ''
+                    ),
+                )).all()
+
             for gu in game_users:
-                user_id = query("""SELECT USER_ID FROM USERS WHERE USER_NAME LIKE ?""", (gu[0], ))
+                user_id = sql_session.query(users.c.USER_ID).filter(users.c.USER_NAME == gu[0]).one()
                 if len(user_id) > 0:
                     user_id = user_id[0][0]
                 msg_id = gu[3]
