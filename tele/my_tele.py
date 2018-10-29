@@ -1,13 +1,11 @@
 import time
 import requests
 import telebot
-from sqlalchemy import and_, or_
 from telebot import util, apihelper
 from core.dbQuery import insert
 from tele.tele_dialogue import TeleDialogue
 from core.non_text_deco import VideoDeco, AudioDeco, PhotoDeco, VoiceDeco
 from core.text_deco import TextDeco
-from core.constants import sql_session, scores, users
 
 
 class MyTele(telebot.TeleBot):
@@ -66,46 +64,6 @@ class MyTele(telebot.TeleBot):
                 except telebot.apihelper.ApiException as e:
                     print(e)
             logger.debug("Jobs done.")
-            game_users = sql_session.query(scores.c.USER_NAME, scores.c.CHAT_ID, scores.c.SCORE,
-                                           scores.c.MSG_ID, scores.c.INLINE_MSG_ID,
-                                           scores.c.CHAT_INSTANCE).filter(
-                and_(
-                    scores.c.TO_UPDATE == 1,
-                    or_(
-                        scores.c.MSG_ID != '',
-                        scores.c.INLINE_MSG_ID != ''
-                    ),
-                )).all()
-
-            for gu in game_users:
-                user_id = sql_session.query(users.c.USER_ID).filter(users.c.USER_NAME == gu[0]).one()
-                if len(user_id) > 0:
-                    user_id = user_id[0][0]
-                msg_id = gu[3]
-                chat_id = gu[1]
-                inline_msg_id = gu[4]
-                chat_instance = gu[5]
-                if inline_msg_id != '':
-                    chat_id = None
-                score = int(gu[2])
-                try:
-                    ret = None
-                    # chat_id => disable_edit_message
-                    # message_id => chat_id
-                    # inline_message_id => message_id
-                    # edit_message => inline_message_id
-                    ret = bot.set_game_score(force = False,
-                                             user_id = user_id,
-                                             message_id = chat_id,
-                                             score = score,
-                                             chat_id = False,
-                                             inline_message_id = msg_id,
-                                             edit_message = inline_msg_id)
-                except telebot.apihelper.ApiException as e:
-                    logger.info("Telegram API exception!", exc_info = e)
-                if ret:
-                    logger.info("Updated game score for {}.".format(gu[0]))
-                insert("""UPDATE GAMES SET TO_UPDATE = 0 WHERE CHAT_INSTANCE LIKE ?""", (chat_instance, ))
 
             or_event.clear()
             try:

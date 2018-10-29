@@ -41,26 +41,4 @@ class Jobs(Base):
     __table_args__ = (UniqueConstraint('CHAT_ID', 'BOT_TYPE', 'USER_NAME', 'MSG_TEXT', name = '_unique_jobs'),)
 
 
-class Scores(Base):
-    __tablename__ = 'SCORES'
-    CHAT_ID = Column(String(250), primary_key = True)
-    BOT_TYPE = Column(String(250), primary_key = True)
-    USER_NAME = Column(String(250), primary_key = True)
-    GAME = Column(String(250), primary_key = True)
-    SCORE = Column(String(250))
-    MSG_ID = Column(String(250), primary_key = True)
-    INLINE_MSG_ID = Column(String(250), primary_key = True)
-    CHAT_INSTANCE = Column(String(250), primary_key = True)
-    TO_UPDATE = Column(Boolean)
-    __table_args__ = (UniqueConstraint('CHAT_ID', 'BOT_TYPE', 'USER_NAME', 'GAME', 'MSG_ID', 'INLINE_MSG_ID',
-                                       'CHAT_INSTANCE', name = '_unique_scores'),)
-
-
-class Games(Base):
-    __tablename__ = 'GAMES'
-    GAME_NAME = Column(String(250), primary_key = True)
-    GAME_SHORT_NAME = Column(String(250), primary_key = True)
-    __table_args__ = (UniqueConstraint('GAME_NAME', 'GAME_SHORT_NAME', name = '_unique_games'),)
-
-
 Base.metadata.create_all(bind = sql_engine)

@@ -9,16 +9,12 @@ from core.dbQuery import insert
 
 
 class Dialogue(object):
-    def __init__(self, chat_id, bot_type, user, args = None):
+    def __init__(self, chat_id, bot_type, user):
         self.chat_id = chat_id
         self.bot_type = bot_type
         self.user = user
         self.job_dial = []
         self.msg = None
-        if args is not None:
-            self.game_flag = args['game']
-        else:
-            self.game_flag = False
 
     def send_typing_status(self):
         pass
@@ -91,8 +87,6 @@ class Dialogue(object):
         elif in_msg_body_lower == 'update':
             self.handle_jobs()
             return
-        elif in_msg_body_lower == 'pong'and self.game_flag:
-            self.OutMsg.markup_type = 'game'
         elif in_msg_body_lower == 'addquote':
             skip_cleanup = True
             insert("""UPDATE USERS SET AWAITING_QUOTE = 1 WHERE CHAT_ID LIKE ?;""", (self.user_id,))

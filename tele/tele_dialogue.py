@@ -8,8 +8,8 @@ from sqlalchemy.sql.expression import func, and_, or_
 
 
 class TeleDialogue(Dialogue):
-    def __init__(self, chat_id, user_id, in_msg_body, user, dia_type, file_id = None, args = None):
-        super(TeleDialogue, self).__init__(chat_id, 'telegram', user, args)
+    def __init__(self, chat_id, user_id, in_msg_body, user, dia_type, file_id = None):
+        super(TeleDialogue, self).__init__(chat_id, 'telegram', user)
         self.user_id = user_id
         self.type = dia_type
         self.markup = None

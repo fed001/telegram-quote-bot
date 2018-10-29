@@ -11,8 +11,6 @@ from core.non_text_deco import NonTextDeco, PhotoDeco, VideoDeco, VoiceDeco, Aud
     StickerDeco, VideoNoteDeco
 from core.text_deco import TextDeco
 
-from tele.inline import inline_proc
-
 if __package__ is None:
     sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 else:
@@ -20,44 +18,19 @@ else:
 
 from tele.my_tele import MyTele
 from tele.tele_dialogue import TeleDialogue
-from tele.inline import inline_default_proc
 logger = telebot.logger
 telebot.logger.setLevel(logging.INFO)  # Outputs INFO/DEBUG messages to console.
 from tele.tele_utils import send_sticker, tele_get_user
 
-# construct the argument parser and parse the arguments
-ap = argparse.ArgumentParser(description='WOLFG Telegram Chatbot')
-ap.add_argument('--game', dest='game', action='store_const',
-                     const=True, default=False,
-                     help='enable Game Support (default: disabled)')
-args = vars(ap.parse_args())
-
-inline_game_howto_text = "Start typing game name and choose a game from the list. Use this in any Chat."
-
-if args["game"] is True:
-    game_server_ip = environ['GAME_SERVER_IP']
-
 token = environ['WOLFG_TELE_TOKEN']
 bot = MyTele(token)
-
-
-@bot.message_handler(commands = ['howto_inline_mode'])
-def handle_command(message):
-    """
-    Send a howto message explaining inline mode.
-    """
-    user = tele_get_user(message)
-    dia = TeleDialogue(message.chat.id, message.from_user.id, message.text, user, message.chat.type)
-    dia.InMsg = TextDeco(dia.InMsg)
-    dia.InMsg.print_in_msg(dia)
-    bot.send_message(message.chat.id, inline_game_howto_text)
 
 
 @bot.message_handler(content_types = ['text', 'photo', 'audio', 'voice', 'video', 'video_note'])
 def handle_command(message):
     """Handle messages."""
     user = tele_get_user(message)
-    dia = TeleDialogue(message.chat.id, message.from_user.id, message.text, user, message.chat.type, None, args)
+    dia = TeleDialogue(message.chat.id, message.from_user.id, message.text, user, message.chat.type, None)
 
     if message.text is not None:
         dia.InMsg = TextDeco(dia.InMsg)
@@ -75,10 +48,7 @@ def handle_command(message):
     dia.InMsg.process_input(dia)
     dia.process_output()
 
-    if 'game_short_name' in dia.OutMsg.tele_kwargs.keys():
-        bot.send_game(**dia.OutMsg.tele_kwargs)
-        dia.OutMsg = TextDeco(dia.OutMsg)
-    elif 'photo' in dia.OutMsg.tele_kwargs.keys():
+    if 'photo' in dia.OutMsg.tele_kwargs.keys():
         bot.send_photo(**dia.OutMsg.tele_kwargs)
         dia.OutMsg = PhotoDeco(dia.OutMsg)
     elif 'audio' in dia.OutMsg.tele_kwargs.keys():
@@ -130,40 +100,6 @@ def handle_command(message):
     dia.stop_awaiting_quote()
     dia.OutMsg = StickerDeco(dia.OutMsg)
     dia.OutMsg.print_out_msg()
-
-
-@bot.callback_query_handler(lambda callback_query: callback_query.game_short_name == 'mygame' and args['game'])
-def handle_query(callback_query):
-    """Start game: Send game URL incl. parameters."""
-    user_name = tele_get_user(callback_query)
-
-    if callback_query.message is not None:
-        msg_id = callback_query.message.message_id
-        chat_id = str(callback_query.message.chat.id)
-        args = 'msg_id=' + str(msg_id)
-    elif callback_query.inline_message_id is not None:
-        inline_msg_id = callback_query.inline_message_id
-        chat_id = str(callback_query.from_user.id)
-        args = 'inline_msg_id=' + str(inline_msg_id)
-        
-    args += '&chat_id=' + chat_id
-    args += '&chat_instance=' + str(callback_query.chat_instance)
-    args += '&user_name=' + user_name.replace(' ', '%20')
-
-    bot.answer_callback_query(callback_query.id, url = game_server_ip + '/pong?' + args)
-
-
-@bot.inline_handler(lambda query: args['game'])
-def default_query(inline_query):
-    """
-    Show the default game Pong for inline query.
-    """
-    logger.info("User looking at default inline query.")
-
-    try:
-        inline_proc(bot, inline_query, game_server_ip)
-    except Exception as e:
-        print(e)
 
 
 if __name__ == "__main__":

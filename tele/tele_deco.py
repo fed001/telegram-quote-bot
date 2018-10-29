@@ -11,9 +11,7 @@ class TeleDeco(Deco):
 
     def prepare_kwargs(self):
         self.tele_kwargs['chat_id'] = self.chat_id
-        if self.markup_type == 'game':
-            self.tele_kwargs['game_short_name'] = 'mygame'
-        elif self.answer and self.markup \
+        if self.answer and self.markup \
                 and self.markup.keyboard and len(self.markup.keyboard) == 1:
             self.tele_kwargs['text'] = self.answer
             self.tele_kwargs['reply_markup'] = self.markup
