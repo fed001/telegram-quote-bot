@@ -1,7 +1,5 @@
 #-*- coding: UTF-8 -*-
-import time
 from time import sleep
-from core.dbQuery import query
 
 
 def send_voice(bot, chat_id, path):

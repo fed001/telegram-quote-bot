@@ -7,7 +7,7 @@ from core.dbQuery import insert
 from tele.tele_dialogue import TeleDialogue
 from core.non_text_deco import VideoDeco, AudioDeco, PhotoDeco, VoiceDeco
 from core.text_deco import TextDeco
-from core.constants import sql_session, games, users
+from core.constants import sql_session, scores, users
 
 
 class MyTele(telebot.TeleBot):
@@ -66,14 +66,14 @@ class MyTele(telebot.TeleBot):
                 except telebot.apihelper.ApiException as e:
                     print(e)
             logger.debug("Jobs done.")
-            game_users = sql_session.query(games.c.USER_NAME, games.c.CHAT_ID, games.c.SCORE,
-                                           games.c.MSG_ID, games.c.INLINE_MSG_ID,
-                                           games.c.CHAT_INSTANCE).filter(
+            game_users = sql_session.query(scores.c.USER_NAME, scores.c.CHAT_ID, scores.c.SCORE,
+                                           scores.c.MSG_ID, scores.c.INLINE_MSG_ID,
+                                           scores.c.CHAT_INSTANCE).filter(
                 and_(
-                    games.c.TO_UPDATE == 1,
+                    scores.c.TO_UPDATE == 1,
                     or_(
-                        games.c.MSG_ID != '',
-                        games.c.INLINE_MSG_ID != ''
+                        scores.c.MSG_ID != '',
+                        scores.c.INLINE_MSG_ID != ''
                     ),
                 )).all()
 

@@ -11,6 +11,8 @@ from core.non_text_deco import NonTextDeco, PhotoDeco, VideoDeco, VoiceDeco, Aud
     StickerDeco, VideoNoteDeco
 from core.text_deco import TextDeco
 
+from tele.inline import inline_proc
+
 if __package__ is None:
     sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 else:
@@ -159,7 +161,7 @@ def default_query(inline_query):
     logger.info("User looking at default inline query.")
 
     try:
-        inline_default_proc(bot, inline_query)
+        inline_proc(bot, inline_query, game_server_ip)
     except Exception as e:
         print(e)
 

@@ -1,10 +1,11 @@
 from datetime import datetime
 import re
 from core.constants import sql_session, users
-from core.dbQuery import query, insert
+from core.dbQuery import insert
 from core.tools import is_not_empty
-from sqlalchemy import func
+from sqlalchemy import func, and_
 from core.constants import quote
+from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 
 
 class TextDeco(object):
@@ -24,13 +25,20 @@ class TextDeco(object):
                     [dia.chat_id, dia.bot_type, dia.user, '', 0, dia.user_id]))
             else:
                 insert("""UPDATE USERS SET USER_ID = ? WHERE CHAT_ID LIKE ?""", (dia.user_id, dia.chat_id))
-        is_awaiting_quote = query("""SELECT AWAITING_QUOTE FROM USERS WHERE AWAITING_QUOTE = 1
-                                     AND CHAT_ID LIKE ?;""", (dia.user_id,))
+        try:
+            is_awaiting_quote = sql_session.query(users).filter(
+                and_(users.c.AWAITING_QUOTE == 1, users.c.CHAT_ID == dia.user_id)).one()
+        except MultipleResultsFound as e:
+            print(e)
+            return
+        except NoResultFound:
+            return
+
         in_msg_body_lower = ''
         in_msg_body_lower = dia.InMsg.in_msg_body.lower().replace('/', '')
         in_msg_body_lower = re.sub(r"@.+", "", in_msg_body_lower)
 
-        if len(is_awaiting_quote) > 0 and dia.type == 'private':
+        if is_awaiting_quote is not None and dia.type == 'private':
             i = 0
             data = in_msg_body_lower.split('\n')
             for item in data:
