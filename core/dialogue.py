@@ -1,10 +1,10 @@
 # -*- coding: UTF-8 -*-
 import re
-import time
+import sqlalchemy
 from sqlalchemy import *
 from core.constants import help_text, sql_engine, sql_session, users, jobs, abort_text, quote_invalid_text, quote_not_found_text,\
     quote_success_text, not_subscribed_text, removing_subscription_text, already_subscribed_text, \
-    adding_subscription_text, subscription_not_private_text, quote_not_private_text
+    adding_subscription_text, subscription_not_private_text, quote_not_private_text, adding_subscription_failed_text
 from core.dbQuery import insert
 
 
@@ -21,67 +21,51 @@ class Dialogue(object):
 
     def is_user_in_jobs(self):
         row_exists = sql_session.query(jobs).filter(
-            and_(jobs.c.CHAT_ID == self.user_id, jobs.c.BOT_TYPE == self.bot_type))
+            and_(
+                jobs.c.CHAT_ID == self.user_id,
+                jobs.c.BOT_TYPE == self.bot_type,
+                or_(
+                    jobs.c.REPEAT == 1,
+                    jobs.c.REPEAT is True,
+                    jobs.c.REPEAT == 'true'
+                )
+            )
+        )
 
         if row_exists.first():
             return True
         else:
             return False
 
-    def get_rdm_quote(self):
-        try:
-            quote_rows = self.perform_quote_select()
-            if quote_rows is not None:
-                raw_quote = quote_rows[0]
-                author = quote_rows[1]
-                type = quote_rows[2]
-                file_id = quote_rows[3]
-            else:
-                raw_quote = quote_not_found_text
-                author = "system"
-                type = 'text'
-                file_id = None
-            if author is not None:
-                author = author.title()
-            if raw_quote is not None:
-                if len(re.findall(r'\W', raw_quote[-1])) == 0:
-                    formatted_quote = raw_quote[0].title() + raw_quote[1:] + '.'
-                else:
-                    formatted_quote = raw_quote[0].title() + raw_quote[1:]
-
-            self.OutMsg.file_id = file_id
-            time.sleep(0.1)
-            self.OutMsg.item = type
-            if type == 'text':
-                self.format_quote(author, formatted_quote)
-        except Exception as e:
-            print(e)
-
-    def format_quote(self, author, quote):
+    def set_outgoing_quote(self):
         pass
 
-    def check_quote(self, i, in_msg_body_lower):
+    def check_incoming_quote(self, i, in_msg_body_lower):
         if i == 0:
             if in_msg_body_lower == 'abort':
-                self.stop_awaiting_quote()
+                self.stop_awaiting_incoming_quote()
                 self.OutMsg.answer = abort_text
             else:
                 self.OutMsg.answer = quote_invalid_text
         else:
             self.OutMsg.answer = quote_success_text.format(i)
 
-    def perform_quote_select(self):
-        pass
-
     def process_output(self):
         skip_cleanup = False
         is_awaiting_quote = sql_session.query(users).filter(
-            and_(or_(users.c.AWAITING_QUOTE is True, users.c.AWAITING_QUOTE == 1), users.c.CHAT_ID == self.user_id)).first()
+            and_(
+                or_(
+                    users.c.AWAITING_QUOTE is True,
+                    users.c.AWAITING_QUOTE == 1
+                ),
+                users.c.CHAT_ID == self.user_id
+            )
+        ).first()
         in_msg_body_lower = ''
         if hasattr(self.InMsg, 'in_msg_body') and self.InMsg.in_msg_body is not None:
             in_msg_body_lower = self.InMsg.in_msg_body.lower().replace('/', '')
         in_msg_body_lower = re.sub(r"@.+", "", in_msg_body_lower)
-        if any(ext == in_msg_body_lower for ext in ['help', 'start']):
+        if in_msg_body_lower == 'help' or in_msg_body_lower == 'start':
             self.OutMsg.disable_web_page_preview = 'True'
             self.OutMsg.answer = help_text
         elif in_msg_body_lower == 'update':
@@ -99,7 +83,7 @@ Author2 - Another Text
             insert("""UPDATE USERS SET AWAITING_QUOTE = 1 WHERE CHAT_ID LIKE ?;""", (self.user_id,))
         elif in_msg_body_lower == 'quote':
             self.send_typing_status()
-            self.get_rdm_quote()
+            self.set_outgoing_quote()
         elif in_msg_body_lower == 'unsubscribe':
             self.send_typing_status()
             if self.is_user_in_jobs():
@@ -115,12 +99,23 @@ Author2 - Another Text
                 self.OutMsg.answer = already_subscribed_text.format(self.user)
             elif not is_user_in_subscribers:
                 if self.type == 'private':
-                    repeat = 'true'
+                    repeat = 1
                     interval = 'daily'
                     self.OutMsg.answer = adding_subscription_text.format(self.user)
-                    sql_session.execute(jobs.insert(
-                        [self.user_id, self.bot_type, self.user, 'quote', 1, repeat, interval, None,
-                         '09:00:00']).prefix_with("OR IGNORE"))
+                    try:
+                        sql_session.execute(jobs.insert(
+                            [self.user_id,
+                             self.bot_type,
+                             self.user,
+                             'quote',
+                             1,
+                             repeat,
+                             interval,
+                             None,
+                             '09:00:00']))
+                    except sqlalchemy.exc.IntegrityError as e:  # unique constraint violated
+                        print(e)
+                        self.OutMsg.answer = adding_subscription_failed_text.format(self.user)
                 else:
                     self.OutMsg.answer = subscription_not_private_text.format(self.user)
         elif is_awaiting_quote is not None and (self.OutMsg.answer is None or self.OutMsg.answer == '') \
@@ -132,11 +127,11 @@ Author2 - Another Text
             skip_cleanup = True
 
         if skip_cleanup is False:
-            self.stop_awaiting_quote()
+            self.stop_awaiting_incoming_quote()
 
         self.OutMsg.prepare_kwargs()
 
-    def stop_awaiting_quote(self):
+    def stop_awaiting_incoming_quote(self):
         insert("""UPDATE USERS SET AWAITING_QUOTE = 0 WHERE CHAT_ID LIKE ?""", (self.user_id,))
 
     def handle_jobs(self):
@@ -151,7 +146,7 @@ Author2 - Another Text
             self.job_dial[i].OutMsg.chat_id = chat_id
             self.job_dial[i].OutMsg.user = user
             if self.job_dial[i].OutMsg.answer == 'quote':
-                self.job_dial[i].get_rdm_quote()
+                self.job_dial[i].set_outgoing_quote()
             self.job_dial[i].format_required = job[4]
             if self.job_dial[i].format_required:
                 self.job_dial[i].OutMsg.parse_mode = 'markdown'
@@ -159,5 +154,5 @@ Author2 - Another Text
             self.job_dial[i].interval = job[6]
             self.job_dial[i].row_id = job[9]
             self.job_dial[i].OutMsg.prepare_kwargs()
-            self.job_dial[i].stop_awaiting_quote()
+            self.job_dial[i].stop_awaiting_incoming_quote()
             i += 1

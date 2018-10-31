@@ -2,6 +2,7 @@ from datetime import datetime
 from sqlalchemy import and_, func, or_
 from core.constants import sql_session, users, quote
 from core.dbQuery import insert
+from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 
 
 class NonTextDeco(object):
@@ -13,24 +14,49 @@ class NonTextDeco(object):
 
     def process_input(self, dia):
         if self.user is not '':
-            user_exists = sql_session.query(users.c.USER_NAME).filter(users.c.CHAT_ID == self.chat_id)
+            user_exists = sql_session.query(users.c.USER_NAME).filter(
+                users.c.CHAT_ID == self.chat_id)
             if not user_exists.first():  # need this in Stickers & Locations also
-                sql_session.execute(users.insert(
-                    [self.chat_id, self.bot_type, self.user, '', False, self.user_id]))
+                try:
+                    sql_session.execute(users.insert(
+                        [self.chat_id, self.bot_type, self.user, '', False, self.user_id]))
+                except sqlalchemy.exc.IntegrityError as e:  # unique constraint violated
+                    print(e)
             else:
                 insert("""UPDATE USERS SET USER_ID = ? WHERE CHAT_ID LIKE ?""", (self.user_id, self.chat_id))
-        is_awaiting_quote = sql_session.query(users.c.AWAITING_QUOTE).filter(
-            and_(or_(users.c.AWAITING_QUOTE == 1, users.c.AWAITING_QUOTE == 'True'),
-                 users.c.CHAT_ID == self.user_id)).first()
+        try:
+            awaiting_incoming_quote = sql_session.query(users.c.AWAITING_QUOTE).filter(
+                and_(
+                    or_(
+                        users.c.AWAITING_QUOTE == 1,
+                        users.c.AWAITING_QUOTE == 'True'
+                    ),
+                    users.c.CHAT_ID == self.user_id
+                )
+            ).one()
+        except NoResultFound as e:
+            print(e)
+            return
+        except MultipleResultsFound as e:
+            print(e)
+            return
+
         in_msg_body_lower = ''
 
-        if is_awaiting_quote and dia.type == 'private':
+        if awaiting_incoming_quote and dia.type == 'private':
             i = 0
-            rowcount = sql_session.execute(quote.insert(
-                    [None, None, func.now(), self.user, self.item.lower(), dia.InMsg.file_id]).\
-                                           prefix_with("OR IGNORE")).rowcount
+            try:
+                rowcount = sql_session.execute(quote.insert(
+                        [None,
+                         None,
+                         func.now(),
+                         self.user,
+                         self.item.lower(),
+                         dia.InMsg.file_id]).prefix_with("OR IGNORE")).rowcount
+            except sqlalchemy.exc.IntegrityError as e:  # unique constraint violated
+                print(e)
             i += rowcount
-            dia.check_quote(i, in_msg_body_lower)
+            dia.check_incoming_quote(i, in_msg_body_lower)
 
     def print_in_msg(self, dia):
         print(str(datetime.now()), '{0} from {1} (Chat ID = {2}, User ID = {3}).'.format(

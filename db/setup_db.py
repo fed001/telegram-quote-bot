@@ -34,7 +34,7 @@ class Jobs(Base):
     USER_NAME = Column(String(250), primary_key = True)
     MSG_TEXT = Column(String(250), primary_key = True)
     MSG_MARKUP = Column(String(250))
-    REPEAT = Column(String(250))
+    REPEAT = Column(Boolean, nullable = False)
     INTERVAL = Column(String(250))
     LAST_SENT_ON_DATE = Column(String(250))
     TO_SEND_AT_TIME = Column(String(250))

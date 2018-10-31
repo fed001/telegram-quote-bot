@@ -18,16 +18,28 @@ class TextDeco(object):
 
     def process_input(self, dia):
         if dia.user is not '':
-            user_exists = sql_session.query(users).filter(
-                users.c.CHAT_ID == dia.chat_id)
-            if not user_exists.first():
-                sql_session.execute(users.insert(
-                    [dia.chat_id, dia.bot_type, dia.user, '', 0, dia.user_id]))
+            try:
+                user_exists = sql_session.query(users).filter(
+                    users.c.CHAT_ID == dia.chat_id).one()
+            except MultipleResultsFound as e:
+                print(e)
+            except NoResultFound:
+                pass
+            if not user_exists:
+                try:
+                    sql_session.execute(users.insert(
+                        [dia.chat_id, dia.bot_type, dia.user, '', 0, dia.user_id]))
+                except sqlalchemy.exc.IntegrityError as e:
+                    print(e)
             else:
                 insert("""UPDATE USERS SET USER_ID = ? WHERE CHAT_ID LIKE ?""", (dia.user_id, dia.chat_id))
         try:
             is_awaiting_quote = sql_session.query(users).filter(
-                and_(users.c.AWAITING_QUOTE == 1, users.c.CHAT_ID == dia.user_id)).one()
+                and_(
+                    users.c.AWAITING_QUOTE == 1,
+                    users.c.CHAT_ID == dia.user_id
+                )
+            ).one()
         except MultipleResultsFound as e:
             print(e)
             return
@@ -47,13 +59,20 @@ class TextDeco(object):
                     author = data_piece[0]
                     quote_text = data_piece[1]
                     if is_not_empty(author) and is_not_empty(quote_text):
-                        rowcount = sql_session.execute(quote.insert(
-                            [author, quote_text, func.now(), dia.user_id, 'text', None]).prefix_with(
-                                                                                        "OR IGNORE")).rowcount
+                        try:
+                            rowcount = sql_session.execute(quote.insert(
+                                [author,
+                                 quote_text,
+                                 func.now(),
+                                 dia.user_id,
+                                 'text',
+                                 None]).prefix_with("OR IGNORE")).rowcount
+                        except sqlalchemy.exc.IntegrityError as e:
+                            print(e)
                         i += rowcount
                 else:
-                    break
-            dia.check_quote(i, in_msg_body_lower)
+                    continue
+            dia.check_incoming_quote(i, in_msg_body_lower)
 
     def print_in_msg(self, dia):
         if hasattr(dia, 'type') and dia.type == 'pseudo':

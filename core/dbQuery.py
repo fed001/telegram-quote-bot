@@ -1,5 +1,4 @@
 #-*- coding: UTF-8 -*-
-import re
 import sqlite3
 from core.constants import db_path
 

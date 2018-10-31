@@ -8,9 +8,9 @@ from core.non_text_deco import VideoDeco, AudioDeco, PhotoDeco, VoiceDeco
 from core.text_deco import TextDeco
 
 
-class MyTele(telebot.TeleBot):
+class TelePollingBot(telebot.TeleBot):
     def _TeleBot__threaded_polling(self, none_stop = False, interval = 0, timeout = 3):
-        from tele.wolfg import logger, bot
+        from tele.telegram_quote_bot import logger, bot
         logger.info('Started polling.')
         self._TeleBot__stop_polling.clear()
         error_interval = .25
@@ -56,7 +56,7 @@ class MyTele(telebot.TeleBot):
                         bot.send_message(**job.OutMsg.tele_kwargs)
                         job.OutMsg = TextDeco(job.OutMsg)
 
-                    if job.repeat == 'true':
+                    if job.repeat == 1 or job.repeat is True or job.repeat == 'true':
                         insert("""UPDATE JOBS SET LAST_SENT_ON_DATE = DATE('NOW') WHERE ROWID = ?""", (job.row_id,))
                     else:
                         insert("""DELETE FROM JOBS WHERE ROWID = ?""", (job.row_id,))

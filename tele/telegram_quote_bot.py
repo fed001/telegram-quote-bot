@@ -1,8 +1,8 @@
 #-*- coding: UTF-8 -*-
 """
-Wolfg
+telegram-quote-bot
+Daily Quote Subscription Service Telegram Chatbot
 """
-import argparse
 import logging
 import sys
 from os import path, environ
@@ -16,14 +16,14 @@ if __package__ is None:
 else:
     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
-from tele.my_tele import MyTele
+from tele.tele_polling_bot import TelePollingBot
 from tele.tele_dialogue import TeleDialogue
 logger = telebot.logger
 telebot.logger.setLevel(logging.INFO)  # Outputs INFO/DEBUG messages to console.
 from tele.tele_utils import send_sticker, tele_get_user
 
-token = environ['WOLFG_TELE_TOKEN']
-bot = MyTele(token)
+token = environ['TELE_TOKEN']
+bot = TelePollingBot(token)
 
 
 @bot.message_handler(content_types = ['text', 'photo', 'audio', 'voice', 'video', 'video_note'])
@@ -96,10 +96,7 @@ def handle_command(message):
     dia = TeleDialogue(message.chat.id, message.from_user.id, message.text, user, message.chat.type)
     dia.InMsg = StickerDeco(dia.InMsg)
     dia.InMsg.print_in_msg(dia)
-    send_sticker(bot, dia.chat_id, 'CAADAgADCwEAAvR7GQABuArOzKHFjusC')
-    dia.stop_awaiting_quote()
-    dia.OutMsg = StickerDeco(dia.OutMsg)
-    dia.OutMsg.print_out_msg()
+    dia.stop_awaiting_incoming_quote()
 
 
 if __name__ == "__main__":
