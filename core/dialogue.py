@@ -88,8 +88,13 @@ Author2 - Another Text
             self.send_typing_status()
             if self.is_user_in_jobs():
                 self.OutMsg.answer = removing_subscription_text.format(self.user)
-                insert("""DELETE FROM JOBS WHERE BOT_TYPE LIKE ? AND CHAT_ID LIKE ?""",
-                       (self.bot_type, self.user_id))
+                sql_session.execute(
+                    jobs.delete().where(
+                        and_(jobs.c.BOT_TYPE == self.bot_type,
+                             jobs.c.CHAT_ID == self.user_id
+                         )
+                    )
+                )
             else:
                 self.OutMsg.answer = not_subscribed_text.format(self.user)
         elif in_msg_body_lower == 'subscribe':

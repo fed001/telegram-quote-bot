@@ -6,6 +6,7 @@ from core.dbQuery import insert
 from tele.tele_dialogue import TeleDialogue
 from core.non_text_deco import VideoDeco, AudioDeco, PhotoDeco, VoiceDeco
 from core.text_deco import TextDeco
+from core.constants import sql_engine, jobs
 
 
 class TelePollingBot(telebot.TeleBot):
@@ -59,7 +60,9 @@ class TelePollingBot(telebot.TeleBot):
                     if job.repeat == 1 or job.repeat is True or job.repeat == 'true':
                         insert("""UPDATE JOBS SET LAST_SENT_ON_DATE = DATE('NOW') WHERE ROWID = ?""", (job.row_id,))
                     else:
-                        insert("""DELETE FROM JOBS WHERE ROWID = ?""", (job.row_id,))
+                        sql = "DELETE FROM JOBS WHERE ROWID = '{}'".format(job.row_id)
+                        sql_engine.execute(sql)
+
                     job.OutMsg.print_out_msg()
                 except telebot.apihelper.ApiException as e:
                     print(e)
