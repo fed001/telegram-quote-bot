@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlalchemy import and_, func, or_
 from core.constants import sql_session, users, quote
+from sqlalchemy.exc import StatementError
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 
 
@@ -22,11 +23,16 @@ class NonTextDeco(object):
                 except sqlalchemy.exc.IntegrityError as e:  # unique constraint violated
                     print(e)
             else:
-                sql_session.execute(users.update().values(
-                    USER_ID = self.user_id
-                ).where(
-                    users.c.CHAT_ID == self.chat_id
-                ))
+                try:
+                    sql_session.execute(
+                        users.update().values(
+                            USER_ID = self.user_id
+                        ).where(
+                            users.c.CHAT_ID == self.chat_id
+                        )
+                    )
+                except StatementError as e:
+                    print(e)
         try:
             awaiting_incoming_quote = sql_session.query(users.c.AWAITING_QUOTE).filter(
                 and_(
