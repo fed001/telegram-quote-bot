@@ -1,7 +1,6 @@
 from datetime import datetime
 import re
 from core.constants import sql_session, users
-from core.dbQuery import insert
 from core.tools import is_not_empty
 from sqlalchemy import func, and_
 from core.constants import quote
@@ -32,7 +31,13 @@ class TextDeco(object):
                 except sqlalchemy.exc.IntegrityError as e:
                     print(e)
             else:
-                insert("""UPDATE USERS SET USER_ID = ? WHERE CHAT_ID LIKE ?""", (dia.user_id, dia.chat_id))
+                sql_session.execute(
+                    users.update().values(
+                        USER_ID = dia.user_id
+                    ).where(
+                        users.c.CHAT_ID == self.chat_id
+                    )
+                )
         try:
             is_awaiting_quote = sql_session.query(users).filter(
                 and_(

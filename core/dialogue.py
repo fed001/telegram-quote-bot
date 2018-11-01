@@ -5,7 +5,6 @@ from sqlalchemy import *
 from core.constants import help_text, sql_engine, sql_session, users, jobs, abort_text, quote_invalid_text, quote_not_found_text,\
     quote_success_text, not_subscribed_text, removing_subscription_text, already_subscribed_text, \
     adding_subscription_text, subscription_not_private_text, quote_not_private_text, adding_subscription_failed_text
-from core.dbQuery import insert
 
 
 class Dialogue(object):
@@ -73,14 +72,22 @@ class Dialogue(object):
             return
         elif in_msg_body_lower == 'addquote':
             skip_cleanup = True
-            insert("""UPDATE USERS SET AWAITING_QUOTE = 1 WHERE CHAT_ID LIKE ?;""", (self.user_id,))
+            sql_session.execute(users.update().values(
+                AWAITING_QUOTE = 1
+            ).where(
+                users.c.CHAT_ID == self.user_id
+            ))
             self.send_typing_status()
             self.OutMsg.answer = """OK, you can either send me an Audio File, Video File, Voice Note, Picture or type a list of Text Quotes in the following format:
 
 Author1 - Text
 Author2 - Another Text
                 """
-            insert("""UPDATE USERS SET AWAITING_QUOTE = 1 WHERE CHAT_ID LIKE ?;""", (self.user_id,))
+            sql_session.execute(users.update().values(
+                AWAITING_QUOTE = 1
+            ).where(
+                users.c.CHAT_ID == self.user_id
+            ))
         elif in_msg_body_lower == 'quote':
             self.send_typing_status()
             self.set_outgoing_quote()
@@ -137,7 +144,11 @@ Author2 - Another Text
         self.OutMsg.prepare_kwargs()
 
     def stop_awaiting_incoming_quote(self):
-        insert("""UPDATE USERS SET AWAITING_QUOTE = 0 WHERE CHAT_ID LIKE ?""", (self.user_id,))
+        sql_session.execute(users.update().values(
+            AWAITING_QUOTE = 0
+        ).where(
+            users.c.CHAT_ID == self.user_id
+        ))
 
     def handle_jobs(self):
         sql = "SELECT *, ROWID, TO_SEND_AT_TIME AS C FROM JOBS WHERE BOT_TYPE LIKE '{}' AND (LAST_SENT_ON_DATE IS NULL OR LAST_SENT_ON_DATE < DATE('NOW')) AND TIME('NOW', 'LOCALTIME') > C".format(self.bot_type)

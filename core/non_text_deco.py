@@ -1,7 +1,6 @@
 from datetime import datetime
 from sqlalchemy import and_, func, or_
 from core.constants import sql_session, users, quote
-from core.dbQuery import insert
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 
 
@@ -23,7 +22,11 @@ class NonTextDeco(object):
                 except sqlalchemy.exc.IntegrityError as e:  # unique constraint violated
                     print(e)
             else:
-                insert("""UPDATE USERS SET USER_ID = ? WHERE CHAT_ID LIKE ?""", (self.user_id, self.chat_id))
+                sql_session.execute(users.update().values(
+                    USER_ID = self.user_id
+                ).where(
+                    users.c.CHAT_ID == self.chat_id
+                ))
         try:
             awaiting_incoming_quote = sql_session.query(users.c.AWAITING_QUOTE).filter(
                 and_(

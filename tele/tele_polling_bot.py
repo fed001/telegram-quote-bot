@@ -2,7 +2,6 @@ import time
 import requests
 import telebot
 from telebot import util, apihelper
-from core.dbQuery import insert
 from tele.tele_dialogue import TeleDialogue
 from core.non_text_deco import VideoDeco, AudioDeco, PhotoDeco, VoiceDeco
 from core.text_deco import TextDeco
@@ -58,7 +57,8 @@ class TelePollingBot(telebot.TeleBot):
                         job.OutMsg = TextDeco(job.OutMsg)
 
                     if job.repeat == 1 or job.repeat is True or job.repeat == 'true':
-                        insert("""UPDATE JOBS SET LAST_SENT_ON_DATE = DATE('NOW') WHERE ROWID = ?""", (job.row_id,))
+                        sql = "UPDATE JOBS SET LAST_SENT_ON_DATE = DATE('NOW') WHERE ROWID = '{}'".format(job.row_id)
+                        sql_engine.execute(sql)
                     else:
                         sql = "DELETE FROM JOBS WHERE ROWID = '{}'".format(job.row_id)
                         sql_engine.execute(sql)
