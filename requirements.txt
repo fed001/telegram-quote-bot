@@ -1,0 +1,9 @@
+telebot
+pyTelegramBotAPI
+requests
+spotipy
+sqlalchemy
+configparser
+setuptools
+psycopg2-binary
+systemd
