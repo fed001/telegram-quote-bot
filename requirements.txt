@@ -1,4 +1,9 @@
 telebot
 pyTelegramBotAPI
-requests>=2.20.0
+requests
+spotipy
 sqlalchemy
+configparser
+setuptools
+psycopg2-binary
+systemd

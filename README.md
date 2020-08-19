@@ -21,16 +21,15 @@ Install the dependencies, setup the database, configure Telegram access in the .
 
 ```sh
 $ cd telegram-quote-bot
-$ pip install -r requirements.txt
-$ cd db
+$ tox
 $ python setup_db.py
+edit telegram_quote_bot.cfg
 ```
 
 ### Usage
 
 ```sh
-$ cd telegram-quote-bot
-$ python -m tele.telegram-quote-bot
+$ python telegram_quote_bot.pyz
 ```
 
    [pyTelegramBotAPI]: <https://github.com/eternnoir/pyTelegramBotAPI>
